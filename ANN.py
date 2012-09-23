@@ -30,28 +30,23 @@ class ANN:
 
 	def setup_1(self):
 		self.ilayer = []
+		self.hlayer_1 = []
+		self.olayer = []
 		for i in range(self.in_l):
 			self.ilayer.append(Neuron())
-		self.hlayer_1 = []
-		for i in range(self.hi_1):
 			self.hlayer_1.append(Neuron())
-		self.hlayer_2 = None
-		self.olayer = []
-		for i in range(self.ot_l):
 			self.olayer.append(Neuron())
+		self.hlayer_2 = None
 	
 	def setup_2(self):		
 		self.ilayer = []
+		self.hlayer_1 = []
+		self.hlayer_2 = []
+		self.olayer = []
 		for i in range(self.in_l):
 			self.ilayer.append(Neuron())
-		self.hlayer_1 = []
-		for i in range(self.hi_1):
 			self.hlayer_1.append(Neuron())
-		self.hlayer_2 = []
-		for i in range(self.hi_1):
 			self.hlayer_2.append(Neuron())
-		self.olayer = []
-		for i in range(self.ot_l):
 			self.olayer.append(Neuron())
 
 	def layer_set(self):
