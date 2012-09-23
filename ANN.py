@@ -9,7 +9,7 @@ class Neuron:
 
 class ANN:
 	def __init__(self, in_l, hidden, ot_l, topo):
-		print len(hidden)
+		print len(hidden), "Andrew is a dumbface"
 		self.in_l = in_l
 		self.ot_l = ot_l
 		if len(hidden) == 1:
