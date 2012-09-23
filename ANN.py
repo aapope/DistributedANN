@@ -62,16 +62,22 @@ class ANN:
 		to_return = {}
 		for i in range(len(layer_1)):
 			for k in range(len(layer_2)):
-				to_return[(i,k)] = random.random()
+				new_weight = random.random()
+				if new_weight > SPARSE_THRESH:
+					to_return[(i,k)] = new_weight
 		return to_return
 
 	def run(input_vector):
 		if len(input_vector) == len(self.ilayer):
+			results = []
 			for i in range(self.ilayer):
-				in_neuron = ilayer[i]
-				output = in_neuron.add_signal(input_vector[i])
-				result = in_neuron.fire()
-		
+				self.ilayer[i].add_signal(input_vector[i])
+				results.append(self.ilayer[i].fire())
+			for i in range(self.ilayer):
+				for k in range(self.hlayer1):
+					if (i,k) in self.i_h1_weights:
+						self.hlayer1[k].add_signal(results[i])
+						
 		else:
 			raise Exception		
 		
