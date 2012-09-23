@@ -59,12 +59,32 @@ class ANN:
 
 
 	def set_weights(self, layer_1, layer_2):
-		to_return = []
+		to_return = {}
 		for i in range(len(layer_1)):
 			for k in range(len(layer_2)):
-				to_return.append((i,k,random.random()))
+				new_weight = random.random()
+				if new_weight > SPARSE_THRESH:
+					to_return[(i,k)] = new_weight
 		return to_return
-		
+
+	def get_results(in_vect, neurons):
+		to_return = []
+		for i in range(len(in_vect)):
+			neurons[i].add_signal(in_vect[i])
+	
+
+	def run(input_vector):
+		results = []
+		for i in range(len(self.ilayer)):
+			self.ilayer[i].add_signal(input_vector[i])
+			results.append(self.ilayer[i].fire())
+		for k in range(self.hlayer_1):
+			for i in range(self.ilayer):
+				if (i,k) in self.i_h1_weights:
+					self.hlayer_1[k].add_signal(results[i]*self.i_h1_weights[(i,k)])
+		results = []
+		for i in range(len(self.hlayer_1)):
+			results.append(self.hlayer_1[i].fire())
 
 if __name__ == '__main__':
 	print sys.argv

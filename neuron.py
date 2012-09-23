@@ -21,9 +21,9 @@ class Neuron:
         then resets the input accumulator.
         '''
         if self.activated():
-            ret = True
+            ret = 1.0
         else:
-            ret = False
+            ret = 0.0
         self.inputs = 0
         return ret
 
