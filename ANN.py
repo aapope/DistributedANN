@@ -54,6 +54,15 @@ class ANN:
 			for k in range(len(layer_2)):
 				to_return.append((i,k,random.random()))
 		return to_return
+
+	def run(input_vector):
+		if len(input_vector) == len(self.ilayer):
+			for i in range(self.ilayer):
+				in_neuron = ilayer[i]
+				output = in_neuron.add_signal(input_vector())
+				result = in_neuron.fire()
+		else:
+			raise Exception		
 		
 
 if __name__ == '__main__':
