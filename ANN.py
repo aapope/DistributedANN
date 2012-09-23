@@ -1,14 +1,19 @@
 import sys, random
-
+from neuron import Neuron
 
 SPARSE_THR = .15
 
-class Neuron:
-	def __init__(self):
-		self.out = 1
-
 class ANN:
-	def __init__(self, in_l, hidden, ot_l, topo):
+	'''This class is the neural network itself. All functions for setup,
+	training, testing, and using reside here. One of these will be run
+	on each node in the cluster.
+	'''
+	def __init__(self, in_l, hidden, ot_l, topo=None):
+		'''To initialize the neural network, the input layer size,
+		hidden layer size[s] (hidden layer should be a tuple of either
+		one or two hidden layer sizes), the output layer size, and an
+		optional topology map.
+		'''
 		print len(hidden), "Andrew is a dumbface"
 		self.in_l = in_l
 		self.ot_l = ot_l
@@ -19,6 +24,8 @@ class ANN:
 			self.hi_1 = hidden[0]
 			self.hi_2 = hidden[1]
 			self.setup_2()
+		if topo:
+			print "yes"
 		self.layer_set()
 
 	def setup_1(self):
@@ -71,10 +78,10 @@ if __name__ == '__main__':
 	out_layer = args[-1]
 	hi_1 = args[1]
 	if len(args) == 3:
-		my_ann = ANN(in_layer, (hi_1,), out_layer, None)
+		my_ann = ANN(in_layer, (hi_1,), out_layer)
 	elif len(args) == 4:
 		hi_2 = args[2]
-		my_ann = ANN(in_layer, (hi_1, hi_2), out_layer, None)
+		my_ann = ANN(in_layer, (hi_1, hi_2), out_layer)
 		
 """	except Exception as e:
 		print e
