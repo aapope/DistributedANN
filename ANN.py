@@ -21,9 +21,6 @@ class ANN:
 			self.setup_2()
 		self.layer_set()
 
-	def __str__(self):
-		return "Andrew is a dumb face."
-	
 	def setup_1(self):
 		self.ilayer = []
 		for i in range(self.in_l):
@@ -78,7 +75,6 @@ if __name__ == '__main__':
 	elif len(args) == 4:
 		hi_2 = args[2]
 		my_ann = ANN(in_layer, (hi_1, hi_2), out_layer, None)
-	print my_ann
 		
 """	except Exception as e:
 		print e
