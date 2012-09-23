@@ -59,18 +59,19 @@ class ANN:
 
 
 	def set_weights(self, layer_1, layer_2):
-		to_return = []
+		to_return = {}
 		for i in range(len(layer_1)):
 			for k in range(len(layer_2)):
-				to_return.append((i,k,random.random()))
+				to_return[(i,k)] = random.random()
 		return to_return
 
 	def run(input_vector):
 		if len(input_vector) == len(self.ilayer):
 			for i in range(self.ilayer):
 				in_neuron = ilayer[i]
-				output = in_neuron.add_signal(input_vector())
+				output = in_neuron.add_signal(input_vector[i])
 				result = in_neuron.fire()
+		
 		else:
 			raise Exception		
 		
