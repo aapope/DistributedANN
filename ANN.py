@@ -63,40 +63,51 @@ class ANN:
 		for i in range(len(layer_1)):
 			for k in range(len(layer_2)):
 				new_weight = random.random()
-				if new_weight > SPARSE_THRESH:
+				if new_weight > SPARSE_THR:
 					to_return[(i,k)] = new_weight
 		return to_return
 
-	def get_results(in_vect, neurons):
+	def get_results(self, in_vect, neurons_1, neurons_2, weights):
 		to_return = []
-		for i in range(len(in_vect)):
-			neurons[i].add_signal(in_vect[i])
-	
+		for k in range(len(neurons_2)):
+			for i in range(len(neurons_1)):
+				if (i, k) in weights:
+					neurons_2[k].add_signal(in_vect[i]*weights[(i,k)])
+			to_return.append(neurons_2[k].fire())
+		return to_return
+					
+				
 
-	def run(input_vector):
+	def run(self, input_vector):
 		results = []
 		for i in range(len(self.ilayer)):
 			self.ilayer[i].add_signal(input_vector[i])
 			results.append(self.ilayer[i].fire())
-		for k in range(self.hlayer_1):
-			for i in range(self.ilayer):
-				if (i,k) in self.i_h1_weights:
-					self.hlayer_1[k].add_signal(results[i]*self.i_h1_weights[(i,k)])
-		results = []
-		for i in range(len(self.hlayer_1)):
-			results.append(self.hlayer_1[i].fire())
+		results = self.get_results(results, self.ilayer, self.hlayer_1, self.i_h1_weights)
+		last = self.hlayer_1
+		last_weights = self.h1_o_weights
+		if self.hlayer_2 != None:		
+			results = self.get_results(results, self.hlayer_1, self.hlayer_2, self.h1_h2_weights)
+			last = self.hlayer_2
+			last_weights = self.h2_o_weights
+		results = self.get_results(results, last, self.olayer, last_weights)
+		return results	
 
 if __name__ == '__main__':
 	print sys.argv
 	args = map(lambda x: int(x), sys.argv[1:])
-	in_layer = args[0]
-	out_layer = args[-1]
-	hi_1 = args[1]
+#"""	in_layer = args[0]
+#	out_layer = args[-1]
+#	hi_1 = args[1]"""
+	in_layer = 5
+	out_layer = 3
+	hi_1 = 2
 	if len(args) == 3:
 		my_ann = ANN(in_layer, (hi_1,), out_layer)
 	elif len(args) == 4:
 		hi_2 = args[2]
 		my_ann = ANN(in_layer, (hi_1, hi_2), out_layer)
+	print my_ann.run([0,1,1,0,1])
 		
 """	except Exception as e:
 		print e
