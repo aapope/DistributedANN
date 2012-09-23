@@ -1,5 +1,7 @@
 import random
 
+#test
+
 class Neuron:
     '''Set of functions for a neuron. Used to sum the input signals
     and determine the output signal
