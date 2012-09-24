@@ -76,7 +76,13 @@ class ANN:
 			to_return.append(neurons_2[k].fire())
 		return to_return
 					
-				
+	def calc_error(self, given, solution):
+		try:
+			error = 0.0
+			for i in range(max(len(given), len(solution))):
+				error += (given[i] - solution[i])**(2.0)
+			error = error*0.5
+		except:			
 
 	def run(self, input_vector):
 		results = []
