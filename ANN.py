@@ -2,6 +2,7 @@ import sys, random
 from neuron import Neuron
 
 SPARSE_THR = .15
+LRN_RT = .05
 
 class ANN:
 	'''This class is the neural network itself. All functions for setup,
@@ -34,7 +35,9 @@ class ANN:
 		self.olayer = []
 		for i in range(self.in_l):
 			self.ilayer.append(Neuron())
+		for i in range(self.hi_1):
 			self.hlayer_1.append(Neuron())
+		for i in range(self.ot_l):
 			self.olayer.append(Neuron())
 		self.hlayer_2 = None
 	
@@ -45,9 +48,13 @@ class ANN:
 		self.olayer = []
 		for i in range(self.in_l):
 			self.ilayer.append(Neuron())
+		for i in range(self.hi_1):
 			self.hlayer_1.append(Neuron())
+		for i in range(self.hi_2):
 			self.hlayer_2.append(Neuron())
+		for i in range(self.ot_l):
 			self.olayer.append(Neuron())
+		self.hlayer_2 = None
 
 	def layer_set(self):
 		self.i_h1_weights = self.set_weights(self.ilayer, self.hlayer_1)
@@ -82,7 +89,20 @@ class ANN:
 			for i in range(max(len(given), len(solution))):
 				error += (given[i] - solution[i])**(2.0)
 			error = error*0.5
-		except:			
+			return error
+		except Exception as e:
+			print e
+
+	def update(self, answer, correct):
+		weight_deltas = [] 		
+		for i in range(len(self.olayer)):
+			weight_deltas.append((1.0 - answer[i])*(answer[i])*(correct[i] - answer[i]))
+		pass
+
+	def train(self, data_tup):
+		data, soln = data_tup
+		answer = self.run(data)
+		update(answer, soln)
 
 	def run(self, input_vector):
 		results = []
@@ -91,28 +111,27 @@ class ANN:
 			results.append(self.ilayer[i].fire())
 		results = self.get_results(results, self.ilayer, self.hlayer_1, self.i_h1_weights)
 		last = self.hlayer_1
-		last_weights = self.h1_o_weights
 		if self.hlayer_2 != None:		
 			results = self.get_results(results, self.hlayer_1, self.hlayer_2, self.h1_h2_weights)
 			last = self.hlayer_2
 			last_weights = self.h2_o_weights
+		else:
+			last_weights = self.h1_o_weights
 		results = self.get_results(results, last, self.olayer, last_weights)
 		return results	
 
 if __name__ == '__main__':
 	print sys.argv
 	args = map(lambda x: int(x), sys.argv[1:])
-#"""	in_layer = args[0]
-#	out_layer = args[-1]
-#	hi_1 = args[1]"""
-	in_layer = 5
-	out_layer = 3
-	hi_1 = 2
+	in_layer = args[0]
+	out_layer = args[-1]
+	hi_1 = args[1]
 	if len(args) == 3:
 		my_ann = ANN(in_layer, (hi_1,), out_layer)
 	elif len(args) == 4:
 		hi_2 = args[2]
 		my_ann = ANN(in_layer, (hi_1, hi_2), out_layer)
+	print len(my_ann.ilayer), len(my_ann.hlayer_1), len(my_ann.olayer) 
 	print my_ann.run([0,1,1,0,1])
 		
 """	except Exception as e:
