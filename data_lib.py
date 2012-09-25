@@ -56,7 +56,7 @@ class DataParser:
             try:
                 ns.append(float(n))
             except:
-                ns.append(None)
+                ns.append(0)
 
         return tuple(ns)
         #return tuple(map(lambda x: float(x), nums))
