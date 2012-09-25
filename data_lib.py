@@ -37,19 +37,29 @@ class DataParser:
         (1,2,3,4) is the input vector, and (5,7) is the output
         vector.
         '''
-        for d in data_file.read().split('\n'): self.data.append(self._parse_line(d))
+        for d in data_file.read().split('\n')[18:]: self.data.append(self._parse_line(d))
 
     def _parse_line(self, line):
-        '''Parses a single line of a data xfile
+        '''Parses a single line of a data file
         '''
-        in_p, out_p = line.split('|')
-        return (self._create_tuple(in_p), self._create_tuple(out_p))
+        #this is set for the breast cancer data
+        tok = line.split(',')[1:]
+        return (self._create_tuple(tok[:-1]), self._create_tuple(tok[-1]))
 
-    def _create_tuple(self, string):
+    def _create_tuple(self, nums):
         '''Creates a tuple of floats from a
         string of comma-separated numbers
         '''
-        return tuple(map(lambda x: float(x), string.split(',')))
+        #this is set for the breast cancer data
+        ns = []
+        for n in nums:
+            try:
+                ns.append(float(n))
+            except:
+                ns.append(None)
+
+        return tuple(ns)
+        #return tuple(map(lambda x: float(x), nums))
 
     def _separate_data(self, ratio=.1):
         '''Separates data into training and
@@ -77,11 +87,15 @@ class DataParser:
         #The first remainder number of sets get one extra
         #data point
         for i in range(rem):
-            sets.append(self.separate_training_test(self.training[i*(chunk_size+1)-(chunk_size+1)/2:(i+1)*(chunk_size+1)+(chunk_size+1)/2]))
+            start = max(0, (i * (chunk_size + 1)) - (chunk_size / 2))
+            end = ((i + 1) * (chunk_size + 1)) + (chunk_size / 2)
+            sets.append(self.separate_training_test(self.training[start:end]))
 
         #The rest get the rounded down amount
         for i in range(rem, num_sets):
-            sets.append(self.separate_training_test(self.training[i*(chunk_size)+chunk_size/2:(i+1)*(chunk_size)+chunk_size/2]))
+            start = max(0, (i * chunk_size) - (chunk_size / 2))
+            end = ((i + 1) * chunk_size) + (chunk_size / 2)
+            sets.append(self.separate_training_test(self.training[start:end]))
 
         return sets
 
