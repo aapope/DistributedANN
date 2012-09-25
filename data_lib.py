@@ -54,7 +54,10 @@ class DataParser:
         ns = []
         for n in nums:
             try:
-                ns.append(float(n))
+                n = float(n)
+                n = (n - 5) / 5
+
+                ns.append(n)
             except:
                 ns.append(0)
 
