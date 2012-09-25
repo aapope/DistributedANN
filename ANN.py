@@ -1,7 +1,7 @@
 import sys, random
 from neuron import Neuron
 
-SPARSE_THR = .15
+SPARSE_THR = 0.0
 LRN_RT = .05
 
 class ANN:
@@ -75,7 +75,11 @@ class ANN:
 				'''SPARSE_THR controls the sparseness of the network; 
 				connections whose weight is lower than this value are not created.'''
 				new_weight = random.random()
-				if new_weight > SPARSE_THR:
+				sign = random.random()
+				if sign > 0.5:
+					new_weight = new_weight * -1.0
+				
+				if abs(new_weight) > SPARSE_THR:
 					to_return[(i,k)] = new_weight
 		return to_return
 
@@ -127,7 +131,9 @@ class ANN:
 		for i in range(len(layer1)):
 			for k in range(len(layer2)):
 				if (i,k) in weights:
+#					print weights[(i,k)]
 					weights[(i,k)] = weights[(i,k)] + LRN_RT*layer2[k].last_output*layer2[k].delta
+#					print weights[(i,k)]
 
 	'''calculate the delta for a given node, and then store it.'''
 	def deltify(self, first_layer, second_layer, weights):

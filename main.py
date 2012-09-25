@@ -22,7 +22,6 @@ if __name__ == '__main__':
     except:
         print "Usage: main.py: python main.py input_layer_size hidden_layer_1 [hidden_layer_2] output_layer datafile"
         #testing purposes
-        A = ANNWrapper(9, (3,), 1, 'breast_cancer.dat')
+        A = ANNWrapper(9, (1,), 1, 'breast_cancer.dat')
 
     A.train()
-    A.test()

@@ -50,19 +50,23 @@ class DataParser:
         '''Creates a tuple of floats from a
         string of comma-separated numbers
         '''
-        #this is set for the breast cancer data
+        #this is set specifically for the breast cancer data
         ns = []
+        if len(nums) == 1:
+            if nums == '2':
+                return [-1]
+            else:
+                return [1]
         for n in nums:
             try:
                 n = float(n)
-                n = (n - 5) / 5
+                n = -1 + (((n-1) / 9) * 2)
 
                 ns.append(n)
             except:
-                ns.append(0)
+                ns.append(.5)
 
         return tuple(ns)
-        #return tuple(map(lambda x: float(x), nums))
 
     def _separate_data(self, ratio=.1):
         '''Separates data into training and

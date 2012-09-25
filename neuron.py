@@ -25,6 +25,7 @@ class Neuron:
         activation = self.activated()
         self.last_output = activation
         self.inputs = 0
+#        print self.delta
         return activation
 
     def activated(self):

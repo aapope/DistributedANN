@@ -1,3 +1,5 @@
+import random
+
 from ANN import ANN
 from data_lib import DataParser
 
@@ -16,17 +18,24 @@ class ANNWrapper:
         self.test_set = parser.get_test_set()
 
     def train(self):
-        print len(self.training_set)
+        self._test()
+        for i in range(10):
+            self._train_epoch()
+            self._test()
+        
+    def _train_epoch(self):
+        random.shuffle(self.training_set)
         for vector in self.training_set:
             self.ANN.train(vector)
 
-    def test(self):
+    def _test(self):
         correct = 0
         for vector in self.test_set:
             out = self.ANN.run(vector[0])[0]
-            print out, vector[1]
+            
+#            print 'produced:', out, 'expected:', vector[1][0]
             #check which it's closest to for this instead
-            if (out < 0 and vector[1][0] == -0.2) or (out > 0 and vector[1][0] == -0.6):
+            if (out < 0 and vector[1][0] == -1) or (out > 0 and vector[1][0] == 1):
                 correct += 1
 
         print "Correct:", float(correct)/len(self.test_set)
