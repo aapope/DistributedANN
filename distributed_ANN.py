@@ -76,15 +76,26 @@ def merge(results, in_layer, hidden_layers, out_layer):
         h1_o_list = map(lambda i: i[0].h1_o_weights, results)
         ann.h1_o_weights = iterate_weights(ratings, h1_o_list)
 
+    return ann
+
 def iterate_weights(ratings, dic_list):
     weight_dict = {}
     for key in dic_list[0]:
         weight_dict[key] = weighted_avg(map(lambda x: x[key], dic_list), ratings)
+        #weight_dict[key] = best(map(lambda x: x[key], dic_list), ratings)
 
     return weight_dict
 
 def weighted_avg(lst, ratings):
-    pass
+    weighted_sum = 0
+    weights_sum = 0
+    for i in range(len(lst)):
+	weighted_sum += lst[i] * ratings[i]
+	weights_sum += ratings[i]
+    weighted_avg = weighted_sum / weights_sum
+
+    return weighted_avg
+
 
 def main():
     ''' starts the distributed ANN
@@ -122,8 +133,14 @@ def main():
     if rank == 0:
         # combine results
         # test results
-        merge(results, in_layer, hidden_layers, out_layer)
+        ann = merge(results, in_layer, hidden_layers, out_layer)
+        print "Correct:", test(ann, my_testing_data)
+        avg = 0
+        for res in results:
+            avg += res[1]
+        avg /= len(results)
 
+        print "Average of nets:", avg
 
 if __name__ == '__main__':
     main()
