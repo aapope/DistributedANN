@@ -62,20 +62,29 @@ def set_up(numNodes, comm):
 
 def merge(results, in_layer, hidden_layers, out_layer):
     ann = ANN(in_layer, hidden_layers, out_layer)
-    
-    unpack_dict(results, results[0][0].i_h1_weights)
+    results.sort(key=lambda x: x[1], reverse=True)
+
+    ratings = map(lambda x: x[1], results)
+    i_h1_list = map(lambda i: i[0].i_h1_weights, results)
+    ann.i_h1_weights = iterate_weights(ratings, i_h1_list)
     if len(hidden_layers) > 1:
-        unpack_dict(results, results[0][0].h1_h2_weights)
-        unpack_dict(results, results[0][0].h2_o_weights)
+        h1_h2_list = map(lambda i: i[0].h1_h2_weights, results)
+        ann.h1_h2_weights = iterate_weights(ratings, h1_h2_list)
+        h2_o_list = map(lambda i: i[0].h2_o_weights, results)
+        ann.h2_o_weights = iterate_weights(ratings, h2_o_list)
     else:
-        unpack_dict(results, results[0][0].h1_o_weights)
+        h1_o_list = map(lambda i: i[0].h1_o_weights, results)
+        ann.h1_o_weights = iterate_weights(ratings, h1_o_list)
 
+def iterate_weights(ratings, dic_list):
+    weight_dict = {}
+    for key in dic_list[0]:
+        weight_dict[key] = weighted_avg(map(lambda x: x[key], dic_list), ratings)
 
-def unpack_dict(results, dict_name):
-    for key in dict_name:
-        for nn, rating in results:
-            print nn, rating
-    
+    return weight_dict
+
+def weighted_avg(lst, ratings):
+    pass
 
 def main():
     ''' starts the distributed ANN
