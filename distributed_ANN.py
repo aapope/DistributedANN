@@ -3,6 +3,80 @@ import sys, random
 from data_lib import DataParser
 from ANN import ANN
 
+EPOCHS = 10
+
+def train(ann, vectors):
+    '''Train ANN ann on vectors vectors
+    '''
+    random.shuffle(vectors)
+    for vector in vectors:
+        ann.train(vector)
+    
+def test(ann, vectors):
+    '''Test ANN ann on vectors vectors.
+    Returns the ratio of correct / total
+    This test is specific to the breast cancer db right now
+    '''
+    correct = 0
+    for vector in vectors:
+        out = ann.run(vector[0])[0]
+        #specific to the breast cancer db
+        if (out < 0 and vector[1][0] == -1) or (out > 0 and vector[1][0] -- 1):
+            correct += 1
+
+    return float(correct)/len(vectors)
+
+def set_up(numNodes, comm):
+    '''Run by the master node, this method
+    sets up the ANNs, reads in the training
+    and test data sets, and scatters them to
+    all the other nodes.
+    '''
+    try:
+        in_layer = int(sys.argv[1])
+        hidden_layers = [int(sys.argv[2])]
+	
+        if len(sys.argv) == 6:
+            hidden_layers.append(int(sys.argv[3]))
+            out_layer = int(sys.argv[4])
+            fileName = sys.argv[5]
+        else:
+            out_layer = int(sys.argv[3])
+            fileName = sys.argv[4]
+    except:
+        in_layer = 9
+        hidden_layers = [1]
+        out_layer = 1
+        fileName = 'breast_cancer.dat'
+
+    #break up data (for each node and into testing/training)
+    f = open(fileName)
+    parser = DataParser(f)
+    training_data = parser.get_training_sets(numNodes)
+    test_data = parser.get_test_set()
+    f.close()
+
+    # broadcast ANN architecture to all nodes
+    comm.bcast((in_layer, hidden_layers, out_layer, fileName), root=0)
+    return training_data, test_data, in_layer, hidden_layers, out_layer
+
+def merge(results, in_layer, hidden_layers, out_layer):
+    ann = ANN(in_layer, hidden_layers, out_layer)
+    
+    unpack_dict(results, results[0][0].i_h1_weights)
+    if len(hidden_layers) > 1:
+        unpack_dict(results, results[0][0].h1_h2_weights)
+        unpack_dict(results, results[0][0].h2_o_weights)
+    else:
+        unpack_dict(results, results[0][0].h1_o_weights)
+
+
+def unpack_dict(results, dict_name):
+    for key in dict_name:
+        for nn, rating in results:
+            print nn, rating
+    
+
 def main():
     ''' starts the distributed ANN
     '''
@@ -14,27 +88,7 @@ def main():
 
     # root node gets data from file, breaks it up, and sends out any relevant ANN information to all nodes
     if rank == 0:
-	in_layer = int(sys.argv[1])
-	hidden_layers = [int(sys.argv[2])]
-	
-	if len(sys.argv) == 6:
-		hidden_layers.append(int(sys.argv[3]))
-		out_layer = int(sys.argv[4])
-		fileName = sys.argv[5]
-	else:
-		out_layer = int(sys.argv[3])
-		fileName = sys.argv[4]
-
-        # break up data (for each node and into testing/training)
-	f = open(fileName)
-        parser = DataParser(f)
-        training_data = parser.get_training_sets(numNodes)
-        test_data = parser.get_test_set()
-        f.close()
-
-        # broadcast ANN architecture to all nodes
-        comm.bcast((in_layer, hidden_layers, out_layer, fileName), root=0)
-	
+       	training_data, test_data, in_layer, hidden_layers, out_layer = set_up(numNodes, comm)
     else:
         # receive ANN architecture from root
         in_layer, hidden_layers, out_layer, fileName = comm.bcast(None,root=0)
@@ -47,20 +101,19 @@ def main():
     ann = ANN(in_layer, hidden_layers, out_layer)
 
     # train ANN
-    random.shuffle(my_training_data)
+    for i in range(EPOCHS):
+        train(ann, my_training_data)
+        print "Correct:", test(ann, my_testing_data), rank
     
-    for i in range(0, len(my_training_data), 1):
-        ann.train(my_training_data[i])
-
-    # test ANN
+    rating = test(ann, my_testing_data)
     
     # gather results back to root node
-    results = comm.gather(ann, root=0)
+    results = comm.gather((ann, rating), root=0)
     
     if rank == 0:
         # combine results
         # test results
-        print len(results)
+        merge(results, in_layer, hidden_layers, out_layer)
 
 
 if __name__ == '__main__':
