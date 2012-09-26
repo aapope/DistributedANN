@@ -1,8 +1,8 @@
-import sys, random
+import sys, random, math
 from neuron import Neuron
 
 SPARSE_THR = 0.0
-LRN_RT = .05
+LRN_RT = .001
 
 class ANN:
 	'''This class is the neural network itself. All functions for setup,
@@ -89,7 +89,8 @@ class ANN:
 		for k in range(len(neurons_2)):
 			for i in range(len(neurons_1)):
 				if (i, k) in weights:
-					neurons_2[k].add_signal(in_vect[i]*weights[(i,k)])
+					to_add = in_vect[i]*weights[(i,k)]
+					neurons_2[k].add_signal(to_add)
 			to_return.append(neurons_2[k].fire())
 		return to_return
 					
@@ -108,12 +109,12 @@ class ANN:
 	def update(self, answer, correct):
 		for i in range(len(self.olayer)):
 			inp = answer[i]
-			self.olayer[i].delta = (inp)*(1.0-inp)*(correct[i] - inp)
-		if self.hlayer_2:
-			self.deltify(self.hlayer_2, self.olayer, self.h2_o_weights)
-			self.deltify(self.hlayer_1, self.hlayer_2, self.h1_h2_weights)
+			self.olayer[i].delta = (1-math.tanh(inp))*(correct[i] - inp)
+		if not self.hlayer_2:
+			self.deltify(self.hlayer_1, self.olayer, self.h1_o_weights)		
 		else:
-			self.deltify(self.hlayer_1, self.olayer, self.h1_o_weights)			
+			self.deltify(self.hlayer_2, self.olayer, self.h2_o_weights)
+			self.deltify(self.hlayer_1, self.hlayer_2, self.h1_h2_weights)	
 		self.deltify(self.ilayer, self.hlayer_1, self.i_h1_weights)
 		self.set_weights()
 
@@ -131,8 +132,10 @@ class ANN:
 		for i in range(len(layer1)):
 			for k in range(len(layer2)):
 				if (i,k) in weights:
-#					print weights[(i,k)]
-					weights[(i,k)] = weights[(i,k)] + LRN_RT*layer2[k].last_output*layer2[k].delta
+					d_w = LRN_RT*layer1[i].last_output*layer2[k].delta
+					#print d_w < 0, d_w
+#					print weights[(i,k)], d_w, LRN_RT, layer2[k].last_output, layer1[i].delta
+					weights[(i,k)] = weights[(i,k)] + d_w 
 #					print weights[(i,k)]
 
 	'''calculate the delta for a given node, and then store it.'''
@@ -142,14 +145,21 @@ class ANN:
 			inp = first_layer[i].last_output
 			for k in range(len(second_layer)):
 				if (i,k) in weights:
-					summed += weights[(i,k)]*second_layer[k].delta
-			first_layer[i].delta = (inp)*(1.0-inp)*summed		
+					to_add = weights[(i,k)]*second_layer[k].delta
+					#print to_add
+					summed += to_add
+			#print summed, "KKKKKK"
+			first_layer[i].delta = (1-math.tanh(inp))*summed
+			#print "***", first_layer[i].delta
 
 	'''take in a vector and its solution, and then send those to several training submethods.'''
 	def train(self, data_tup):
+		#print self.i_h1_weights
 		data, soln = data_tup
 		answer = self.run(data)
 		self.update(answer, soln)
+		#print self.i_h1_weights
+#		print self.i_h1_weights, self.h1_o_weights
 
 	'''get the output from some particular vector.'''
 	def run(self, input_vector):
@@ -169,6 +179,33 @@ class ANN:
 		return results	
 
 if __name__ == '__main__':
+	f = open('dat.txt')
+	vectors = []
+	line = f.readline()
+	while line != '':
+		data = line.split(' ')
+		args = map(lambda x: float(x), data)
+		vectors.append((args[:-1], [args[-1]]))
+		line = f.readline()
+	print vectors
+	random.shuffle(vectors)
+	train = vectors[:150]
+	test = vectors[151:]
+	my_ann = ANN(2, (2,2), 1)
+	for i in range(100):
+		correct = 0.0
+		for k in range(len(test)):
+			ans = my_ann.run(test[k][0])
+			#print ans, test[k][1]
+			if abs(ans[0] - test[k][1][0]) < 1.0:
+				correct += 1.0
+		print correct/(float(len(test)))
+		random.shuffle(train)
+		for vector in train:
+			my_ann.train(vector)			
+
+"""
+if __name__ == '__main__':
 	print sys.argv
 	args = map(lambda x: int(x), sys.argv[1:])
 	in_layer = args[0]
@@ -186,11 +223,14 @@ if __name__ == '__main__':
 		ans.append(random.random())
 	print ans, '\n*****'
 	tester = 1
-	for i in range(100000000):
+	for i in range(1000):
 		my_ann.train(([0,1,1,0,1], ans))
 		if i % tester == 0:
-			print my_ann.run([0,1,1,0,1])
-			tester *= 10		
+			out = my_ann.run([0,1,1,0,1])
+			print out
+			print ans
+"""
+		
 """	except Exception as e:
 		print e
 		print 'USAGE \n python ANN.py input_nodes hidden_layer_1_nodes [hidden_layer_2_nodes] output_nodes'
